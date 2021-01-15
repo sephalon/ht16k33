@@ -244,6 +244,11 @@ boolean HT16K33::getLed(uint8_t ledno,boolean Fresh){
 } // getLed
 
 /****************************************************************/
+uint8_t HT16K33::displayRaw(uint8_t pos) {
+  return displayRam[pos];
+} // displayRaw
+
+/****************************************************************/
 uint8_t HT16K33::setDisplayRaw(uint8_t pos, uint8_t val) {
   if (pos < sizeof(displayRam)) {
     displayRam[pos] = val;
