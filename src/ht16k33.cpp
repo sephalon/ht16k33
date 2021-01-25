@@ -32,7 +32,6 @@
 
 #include "Arduino.h"
 #include "ht16k33.h"
-#include <Wire.h>
 
 // "address" is base address 0-7 which becomes 11100xxx = E0-E7
 #define BASEHTADDR 0x70
@@ -74,7 +73,7 @@
 #define HT16K33_DIM_16        B00001111 // Dimming set - 16/16
 
 // Constructor
-HT16K33::HT16K33(){
+HT16K33::HT16K33(TwoWire *wire) : _wire(wire){
 }
 
 /****************************************************************/
@@ -83,7 +82,7 @@ HT16K33::HT16K33(){
 void HT16K33::begin(uint8_t address){
   uint8_t i;
   _address=address | BASEHTADDR;
-  Wire.begin();
+  _wire->begin();
   i2c_write(HT16K33_SS  | HT16K33_SS_NORMAL); // Wakeup
   i2c_write(HT16K33_DSP | HT16K33_DSP_ON | HT16K33_DSP_NOBLINK); // Display on and no blinking
   i2c_write(HT16K33_RIS | HT16K33_RIS_OUT); // INT pin works as row output 
@@ -98,9 +97,9 @@ void HT16K33::begin(uint8_t address){
 // internal function - Write a single byte
 //
 uint8_t HT16K33::i2c_write(uint8_t val){
-  Wire.beginTransmission(_address);
-  Wire.write(val);
-  return Wire.endTransmission();
+  _wire->beginTransmission(_address);
+  _wire->write(val);
+  return _wire->endTransmission();
 } // i2c_write
 
 /****************************************************************/
@@ -111,19 +110,19 @@ uint8_t HT16K33::i2c_write(uint8_t val){
 //
 uint8_t HT16K33::i2c_write(uint8_t cmd,uint8_t *data,uint8_t size,boolean LSB){
   uint8_t i;
-  Wire.beginTransmission(_address);
-  Wire.write(cmd);
+  _wire->beginTransmission(_address);
+  _wire->write(cmd);
   i=0;
   while (i<size){
     if (LSB){
-      Wire.write(data[i+1]);
-      Wire.write(data[i++]);
+      _wire->write(data[i+1]);
+      _wire->write(data[i++]);
       i++;
     } else {
-      Wire.write(data[i++]);
+      _wire->write(data[i++]);
     }
   }
-  return Wire.endTransmission(); // Send out the data
+  return _wire->endTransmission(); // Send out the data
 } // i2c_write
 
 /****************************************************************/
@@ -131,8 +130,8 @@ uint8_t HT16K33::i2c_write(uint8_t cmd,uint8_t *data,uint8_t size,boolean LSB){
 //
 uint8_t HT16K33::i2c_read(uint8_t addr){
   i2c_write(addr);
-  Wire.requestFrom(_address,(uint8_t) 1);
-  return Wire.read();    // read one byte
+  _wire->requestFrom(_address,(uint8_t) 1);
+  return _wire->read();    // read one byte
 } // i2c_read
 
 /****************************************************************/
@@ -143,11 +142,11 @@ uint8_t HT16K33::i2c_read(uint8_t addr,uint8_t *data,uint8_t size){
   uint8_t i,retcnt,val;
   
   i2c_write(addr);
-  retcnt=Wire.requestFrom(_address, size);
+  retcnt=_wire->requestFrom(_address, size);
   i=0;
-  while(Wire.available() && i<size)    // slave may send less than requested
+  while(_wire->available() && i<size)    // slave may send less than requested
   {
-    data[i++] = Wire.read();    // receive a byte as character
+    data[i++] = _wire->read();    // receive a byte as character
   }
 
   return retcnt;

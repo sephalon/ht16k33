@@ -3,7 +3,7 @@
  * Copyright:  Peter Sjoberg <peters-alib AT techwiz.ca>
  * License: GPLv3
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License version 3 as 
+    it under the terms of the GNU General Public License version 3 as
     published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,
@@ -34,6 +34,7 @@
 #define ht16k33_h
 
 #include "Arduino.h"
+#include <Wire.h>
 
 class HT16K33
 {
@@ -43,7 +44,7 @@ class HT16K33
 
   DisplayRam_t displayRam;
 
-  HT16K33(); // the class itself
+  HT16K33(TwoWire *wire=&Wire); // the class itself
 
   void    begin(uint8_t address);
   void    end();
@@ -81,6 +82,7 @@ class HT16K33
  private:
   void _updateKeyram();
 
+  TwoWire *_wire;
   KEYDATA _keyram;
   uint8_t _address;
   uint8_t *_seg7Font;
